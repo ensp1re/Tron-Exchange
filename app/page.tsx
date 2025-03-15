@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,24 +7,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, AlertCircle, Wallet, RefreshCw } from "lucide-react"
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
-
-declare global {
-  interface Window {
-    tronWeb: any;
-    tronLink: any;
-  }
-}
+import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks"
+import { WalletActionButton } from "@tronweb3/tronwallet-adapter-react-ui"
+import { tronWeb } from "@/lib/tronweb"
+import toast from "react-hot-toast"
 
 export default function TronExchangePage() {
-  const [walletAddress, setWalletAddress] = useState<string>("")
+  const { address, connected, wallet } = useWallet()
   const [usdtBalance, setUsdtBalance] = useState<number>(0)
   const [trxBalance, setTrxBalance] = useState<number>(0)
   const [trxAmount, setTrxAmount] = useState<number>(0)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [status, setStatus] = useState<{ message: string; isError: boolean } | null>(null)
-  const [tronWebInstance, setTronWebInstance] = useState<any>(null)
 
   const usdtContractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
   const trxReceivingAddress = "TM4oyUuVcKDEE7mncd221zNDd9hFN3BmZ4"
@@ -34,66 +31,49 @@ export default function TronExchangePage() {
   const totalCost = baseCost + serviceFee
 
   useEffect(() => {
-    // Check if TronLink is installed
-    const checkTronLink = () => {
-      return typeof window !== "undefined" && window.tronWeb
+    if (connected && address) {
+      updateBalances()
     }
+  }, [connected, address])
 
-    if (checkTronLink() && window.tronWeb.defaultAddress.base58) {
-      setTronWebInstance(window.tronWeb)
-      setWalletAddress(window.tronWeb.defaultAddress.base58)
-      updateBalances(window.tronWeb, window.tronWeb.defaultAddress.base58)
-    }
+  useEffect(() => {
+    const isBrowser = typeof window !== "undefined"
+    if (!isBrowser) return
   }, [])
 
-  const connectWallet = async () => {
-    if (typeof window === "undefined" || !window.tronLink) {
-      setStatus({
-        message: "Please install TronLink extension!",
-        isError: true,
-      })
-      return
-    }
+  const updateBalances = async () => {
+    if (!connected || !address) return
 
     try {
-      await window.tronLink.request({ method: "tron_requestAccounts" })
-      const tronWeb = window.tronWeb
-      setTronWebInstance(tronWeb)
+      // Use TronWeb instance to get balances
+      let tronWebToUse = tronWeb
 
-      if (tronWeb && tronWeb.defaultAddress.base58) {
-        setWalletAddress(tronWeb.defaultAddress.base58)
-        updateBalances(tronWeb, tronWeb.defaultAddress.base58)
+
+      console.log("Fetching balances for address:", wallet?.adapter.name)
+
+      // If using TronLink, we can use the injected tronWeb instance
+      if (wallet?.adapter.name === "TronLink" && window.tronWeb) {
+        tronWebToUse = window.tronWeb
       }
-    } catch (error) {
-      console.error("Wallet connection error:", error)
-      setStatus({
-        message: "Failed to connect to TronLink.",
-        isError: true,
-      })
-    }
-  }
 
-  const updateBalances = async (tronWeb: any, address: string) => {
-    if (!address || !tronWeb) return
+      tronWebToUse.setAddress(address)
 
-    try {
-      const usdtContract = await tronWeb.contract().at(usdtContractAddress)
-      const usdtBalanceResult = await usdtContract.balanceOf(address).call()
-      const trxBalanceResult = await tronWeb.trx.getBalance(address)
+      console.log("Fetching balances for address:", address)
+
+      const usdtContract = await tronWebToUse.contract().at(usdtContractAddress)
+      const usdtBalanceResult = await usdtContract.balanceOf(tronWeb.address.toHex(address)).call()
+      const trxBalanceResult = await tronWebToUse.trx.getBalance(tronWeb.address.toHex(address))
 
       setUsdtBalance(Number(usdtBalanceResult) / 1e6)
       setTrxBalance(Number(trxBalanceResult) / 1e6)
     } catch (error) {
-      console.error("Balance fetch error:", error)
-      setStatus({
-        message: "Failed to fetch balances.",
-        isError: true,
-      })
+      toast.error("Failed to fetch balances. Please try again.")
+      console.error("Failed to fetch balances:", error)
     }
   }
 
   const buyTrx = async () => {
-    if (!walletAddress) {
+    if (!connected || !address) {
       setStatus({
         message: "Please connect your wallet first!",
         isError: true,
@@ -115,88 +95,42 @@ export default function TronExchangePage() {
     try {
       console.log("Preparing USDT transaction...")
 
-      const usdtValue = Math.floor(totalCost * 1e6)
+      // tronWeb.setAddress(address)
 
-      const unsignedTx = await tronWebInstance.transactionBuilder.triggerSmartContract(
+      // Create a transaction using TronWeb
+      const unsignedTx = await tronWeb.transactionBuilder.triggerSmartContract(
         usdtContractAddress,
         "transfer(address,uint256)",
-        {},
+        {
+          feeLimit: 1000000000,
+          callValue: 0,
+          owner_address: tronWeb.address.toHex(address),
+        },
         [
           { type: "address", value: trxReceivingAddress },
-          { type: "uint256", value: usdtValue },
+          { type: "uint256", value: Math.floor(totalCost * 1e6) },
         ],
-        walletAddress,
+        address
       )
 
-      const signedTx = await tronWebInstance.trx.sign(unsignedTx.transaction)
-      console.log("Transaction signed!")
+      console.log("USDT Transaction prepared:", unsignedTx)
 
-      console.log("Sending USDT to buyer...")
-      const trxResponse = await fetch("/api/send-trx", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipient: walletAddress, amount: trxAmount }),
-      })
+      // Sign the transaction using the wallet adapter
 
-      console.log(trxResponse)
+      await wallet?.adapter.signMessage("Please sign the transaction to buy TRX")
 
+      const signedTx = await wallet?.adapter.signTransaction(unsignedTx.transaction);
 
-      if (!trxResponse.ok) {
-        console.error("TRX Transfer failed!")
-        setStatus({
-          message: "TRX Transfer failed!",
-          isError: true,
-        })
-        return
-      }
+      console.log("USDT Transaction signed:", signedTx)
 
-      const trxData = await trxResponse.json()
-      if (trxData.success) {
-        setStatus({
-          message: `Sent ${totalCost} USDT successfully!`,
-          isError: false,
-        })
-      } else {
-        setStatus({
-          message: "TRX Transfer failed!",
-          isError: true,
-        })
-        console.error("TRX Transfer failed:", trxData)
-        return
-      }
+      // Send TRX to buyer
+      await processTrxSending()
 
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+      // Send energy boost
+      await processEnergyBoost()
 
-      console.log("Requesting energy boost...")
-      const energyResponse = await fetch("/api/send-energy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipient: walletAddress, amount: 66000 }),
-      })
-
-      if (!energyResponse.ok) {
-        console.error("Energy boost failed!")
-        setStatus({
-          message: "Energy boost failed! Transaction may have high fees.",
-          isError: true,
-        })
-        return
-      }
-
-      const energyData = await energyResponse.json()
-
-
-      if (!energyData.success) {
-        console.error("Energy boost failed!")
-        setStatus({
-          message: "Energy boost failed! Transaction may have high fees.",
-          isError: true,
-        })
-        return
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      const tx = await tronWebInstance.trx.sendRawTransaction(signedTx)
+      // Broadcast the signed transaction
+      const tx = await tronWeb.trx.sendRawTransaction(signedTx)
       console.log("USDT Transaction broadcasted:", tx)
 
       setStatus({
@@ -204,16 +138,74 @@ export default function TronExchangePage() {
         isError: false,
       })
 
-      updateBalances(tronWebInstance, walletAddress)
-    } catch (error) {
+      updateBalances()
+
+
+    } catch (error: any) {
       console.error("Transaction error:", error)
-      setStatus({
-        message: "Transaction failed. Please try again.",
-        isError: true,
-      })
+      if (error.message.includes("declined")) {
+        setStatus({
+          message: "Transaction declined by user.",
+          isError: true,
+        })
+      } else if (error.message.includes("connection")) {
+        setStatus({
+          message: "Connection error. Please check your internet connection and try again.",
+          isError: true,
+        })
+      } else {
+        setStatus({
+          message: error.message || "Transaction failed. Please try again.",
+          isError: true,
+        })
+      }
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const processTrxSending = async () => {
+    console.log("Sending TRX to buyer...")
+    const trxResponse = await fetch("/api/send-trx", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipient: address, amount: trxAmount }),
+    })
+
+
+    const trxData = await trxResponse.json()
+    if (trxData.success) {
+      setStatus({
+        message: `Sent ${totalCost.toFixed(2)} USDT successfully!`,
+        isError: false,
+      })
+    } else {
+      throw new Error("TRX Transfer failed: " + (trxData.error || "Unknown error"))
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
+
+  const processEnergyBoost = async () => {
+    console.log("Requesting energy boost...")
+    const energyResponse = await fetch("/api/send-energy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipient: address, amount: 66000 }),
+    })
+
+    const energyData = await energyResponse.json()
+    if (!energyData.success) {
+      throw new Error("Energy boost failed: " + (energyData.error || "Unknown error"))
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+  }
+
+  // Format wallet address for display
+  const formatAddress = (addr: string) => {
+    if (!addr) return ""
+    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`
   }
 
   return (
@@ -225,38 +217,52 @@ export default function TronExchangePage() {
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
-          {!walletAddress ? (
-            <Button onClick={connectWallet} className="w-full bg-primary hover:bg-primary/90" size="lg">
-              <Wallet className="mr-2 h-5 w-5" />
-              Connect Wallet
-            </Button>
-          ) : (
+          <div className="flex justify-center">
+            <WalletActionButton
+              style={{
+                backgroundColor: connected ? "#1F2937" : "#FF8C00",
+                color: "white",
+                border: "none",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                fontSize: "16px",
+                fontWeight: "bold",
+              }}
+            />
+          </div>
+
+          {connected && (
             <div className="flex items-center justify-between bg-gray-900 p-3 rounded-lg">
               <div className="flex flex-col">
                 <span className="text-sm text-gray-400">Connected Wallet</span>
-                <span className="font-mono text-xs truncate max-w-[200px]">{walletAddress}</span>
+                <div className="flex items-center">
+                  <span className="font-mono text-xs truncate max-w-[200px]">{formatAddress(address || "")}</span>
+                  <span className="ml-2 text-xs text-gray-400">({wallet?.adapter.name})</span>
+                </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => updateBalances(tronWebInstance, walletAddress)}
-                className="border-gray-600"
-              >
+              <Button variant="outline" size="sm" onClick={updateBalances} className="border-gray-600">
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-900 p-3 rounded-lg">
-              <div className="text-sm text-gray-400">USDT Balance</div>
-              <div className="text-xl font-bold">{formatCurrency(usdtBalance, 2)} USDT</div>
+          {connected && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-900 p-3 rounded-lg">
+                <div className="text-sm text-gray-400">USDT Balance</div>
+                <div className="text-xl font-bold">{formatCurrency(usdtBalance, 2)} USDT</div>
+              </div>
+              <div className="bg-gray-900 p-3 rounded-lg">
+                <div className="text-sm text-gray-400">TRX Balance</div>
+                <div className="text-xl font-bold">{formatCurrency(trxBalance, 2)} TRX</div>
+              </div>
             </div>
-            <div className="bg-gray-900 p-3 rounded-lg">
-              <div className="text-sm text-gray-400">TRX Balance</div>
-              <div className="text-xl font-bold">{formatCurrency(trxBalance, 2)} TRX</div>
-            </div>
-          </div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -305,7 +311,7 @@ export default function TronExchangePage() {
         <CardFooter>
           <Button
             onClick={buyTrx}
-            disabled={isLoading || !walletAddress || trxAmount <= 0}
+            disabled={isLoading || !connected || trxAmount <= 0}
             className="w-full bg-primary hover:bg-primary/90"
             size="lg"
           >
