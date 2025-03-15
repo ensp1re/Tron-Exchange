@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { NextResponse } from "next/server";
-const { TronWeb } = require('tronweb')
+const { TronWeb } = require("tronweb");
 
 // Ensure environment variables are set in production
 if (
@@ -16,10 +16,6 @@ if (
 const privateKey = process.env.NEXT_TRON_PRIVATE_KEY!;
 const fromAddress = process.env.NEXT_TRON_ADDRESS!;
 const apiKey = process.env.NEXT_TRONGRID_API_KEY!;
-
-console.log("Sending TRX from:", fromAddress);
-console.log("Using TronGrid API key:", apiKey);
-console.log("Private key:", privateKey);
 
 // Rate limiting store (in production, use Redis or a database)
 const lastTransactions: Record<string, number> = {};
