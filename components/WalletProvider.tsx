@@ -34,7 +34,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
             network: "Mainnet",
             options: {
                 relayUrl: 'wss://relay.walletconnect.com',
-                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID! || "your-project-id", // create a new project on https://cloud.reown.com,
+                projectId: '363d081347abde707e55878fbcbf6242', // create a new project on https://cloud.reown.com,
                 metadata: {
                     name: 'Tron Exchange',
                     description: 'Tron Exchange',
