@@ -12,7 +12,9 @@ import { LedgerAdapter } from "@tronweb3/tronwallet-adapter-ledger"
 import "@tronweb3/tronwallet-adapter-react-ui/style.css"
 import toast from "react-hot-toast"
 
-export function WalletProvider({ children }: { children: React.ReactNode }) {
+const WalletProvider: React.FC<{
+    children: React.ReactNode
+}> = ({ children }) => {
     // Handle wallet connection errors
     function onError(e: WalletError) {
         if (e instanceof WalletConnectionError) {
@@ -72,3 +74,5 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     )
 }
 
+
+export default WalletProvider;

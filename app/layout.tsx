@@ -1,19 +1,17 @@
-import type React from "react"
-import type { Metadata } from "next"
+'use client';
+
+import React from "react"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import dynamic from 'next/dynamic'
 import { ThemeProvider } from "@/components/ThemeProvider"
-import { WalletProvider } from "@/components/WalletProvider"
 import { Toaster } from "react-hot-toast"
+
+const WalletProvider = dynamic(() => import("@/components/WalletProvider"), { ssr: false })
 
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "TRON Exchange | Buy TRX with USDT",
-  description: "Fast and secure cryptocurrency exchange platform for TRON (TRX) and USDT",
-  keywords: ["TRON", "TRX", "USDT", "cryptocurrency", "exchange", "blockchain"],
-}
 
 export default function RootLayout({
   children,
