@@ -12,6 +12,11 @@ import { LedgerAdapter } from "@tronweb3/tronwallet-adapter-ledger"
 import "@tronweb3/tronwallet-adapter-react-ui/style.css"
 import toast from "react-hot-toast"
 
+if (!process.env.NEXT_PUBLIC_CLIENT_URL || !process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
+    throw new Error("NEXT_PUBLIC_CLIENT_URL is not defined")
+}
+
+
 const WalletProvider: React.FC<{
     children: React.ReactNode
 }> = ({ children }) => {
