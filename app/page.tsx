@@ -41,6 +41,34 @@ export default function TronExchangePage() {
     if (!isBrowser) return
   }, [])
 
+  function iOS() {
+    return (
+      [
+        'iPad Simulator',
+        'iPhone Simulator',
+        'iPod Simulator',
+        'iPad',
+        'iPhone',
+        'iPod',
+      ].includes(navigator.platform) ||
+      (navigator.userAgent.includes('Mac') && 'ontouchend' in document)
+    );
+  }
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && iOS()) {
+        window.localStorage.removeItem('WALLETCONNECT_DEEPLINK_CHOICE');
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const updateBalances = async () => {
     if (!connected || !address) return
 

@@ -40,7 +40,6 @@ const WalletProvider: React.FC<{
         const walletConnectAdapter = new WalletConnectAdapter({
             network: "Mainnet",
             options: {
-        
                 relayUrl: 'wss://relay.walletconnect.org',
                 projectId: `${process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID}`, // create a new project on https://cloud.reown.com,
                 metadata: {
@@ -52,9 +51,28 @@ const WalletProvider: React.FC<{
             },
             web3ModalConfig: {
                 themeMode: 'dark',
+                
                 themeVariables: {
                     '--wcm-z-index': '1000'
                 },
+                mobileWallets: [
+                    {
+                        id: 'tronlink',
+                        name: 'TronLink',
+                        links: {
+                            native: 'tronlink://',
+                            universal: 'https://www.tronlink.org/'
+                        }
+                    },
+                    {
+                        id: 'trustwallet',
+                        name: 'Trust Wallet',
+                        links: {
+                            native: 'trust://',
+                            universal: 'https://trustwallet.com/'
+                        }
+                    }
+                ]
             }
         });
 
