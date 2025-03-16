@@ -12,7 +12,7 @@ import { LedgerAdapter } from "@tronweb3/tronwallet-adapter-ledger"
 import "@tronweb3/tronwallet-adapter-react-ui/style.css"
 import toast from "react-hot-toast"
 
-if (!process.env.NEXT_PUBLIC_CLIENT_URL || !process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
+if (!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID) {
     throw new Error("NEXT_PUBLIC_CLIENT_URL is not defined")
 }
 
@@ -41,7 +41,7 @@ const WalletProvider: React.FC<{
             network: "Mainnet",
             options: {
                 relayUrl: 'wss://relay.walletconnect.com',
-                projectId: '363d081347abde707e55878fbcbf6242', // create a new project on https://cloud.reown.com,
+                projectId: `${process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID}`, // create a new project on https://cloud.reown.com,
                 metadata: {
                     name: 'Tron Exchange',
                     description: 'Tron Exchange',
