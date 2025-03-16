@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { WalletError, WalletConnectionError, WalletSignTransactionError } from "@tronweb3/tronwallet-abstract-adapter"
 import { WalletProvider as TronWalletProvider } from "@tronweb3/tronwallet-adapter-react-hooks"
 import { WalletModalProvider } from "@tronweb3/tronwallet-adapter-react-ui"
-import { BitKeepAdapter, OkxWalletAdapter, TronLinkAdapter } from "@tronweb3/tronwallet-adapters"
+import { BitKeepAdapter, OkxWalletAdapter, TronLinkAdapter, ImTokenAdapter } from "@tronweb3/tronwallet-adapters"
 import { WalletConnectAdapter } from "@tronweb3/tronwallet-adapter-walletconnect"
 import { LedgerAdapter } from "@tronweb3/tronwallet-adapter-ledger"
 // Import the styles
@@ -60,7 +60,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const bitKeepAdapter = new BitKeepAdapter()
         const okxwalletAdapter = new OkxWalletAdapter()
 
-        return [tronLinkAdapter, bitKeepAdapter, okxwalletAdapter, walletConnectAdapter, ledgerAdapter].filter(Boolean)
+        const imTokenAdapter = new ImTokenAdapter()
+
+        return [tronLinkAdapter, bitKeepAdapter, okxwalletAdapter, walletConnectAdapter, ledgerAdapter, imTokenAdapter].filter(Boolean)
     }, [])
 
     return (
