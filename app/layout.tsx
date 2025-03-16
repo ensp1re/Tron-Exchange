@@ -6,6 +6,7 @@ import "./globals.css"
 import dynamic from 'next/dynamic'
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { Toaster } from "react-hot-toast"
+import '@tronweb3/tronwallet-adapter-react-ui/style.css';
 
 const WalletProvider = dynamic(() => import("@/components/WalletProvider"), { ssr: false })
 

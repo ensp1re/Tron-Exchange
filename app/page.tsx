@@ -14,6 +14,11 @@ import { WalletActionButton } from "@tronweb3/tronwallet-adapter-react-ui"
 import { tronWeb } from "@/lib/tronweb"
 import toast from "react-hot-toast"
 
+export const rows = [
+  { name: 'Multi Action Button', reactUI: WalletActionButton },
+];
+
+
 export default function TronExchangePage() {
   const { address, connected, wallet } = useWallet()
   const [usdtBalance, setUsdtBalance] = useState<number>(0)
@@ -246,22 +251,7 @@ export default function TronExchangePage() {
 
         <CardContent className="space-y-6 pt-6">
           <div className="flex justify-center">
-            <WalletActionButton
-              style={{
-                backgroundColor: connected ? "#1F2937" : "#FF8C00",
-                color: "white",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                fontSize: "16px",
-                fontWeight: "bold",
-              }}
-            />
+            <WalletActionButton />
           </div>
 
           {connected && (
@@ -273,7 +263,7 @@ export default function TronExchangePage() {
                   <span className="ml-2 text-xs text-gray-400">({wallet?.adapter.name})</span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={updateBalances} className="border-gray-600">
+              <Button onClick={updateBalances} className="border-gray-600">
                 <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
@@ -341,7 +331,6 @@ export default function TronExchangePage() {
             onClick={buyTrx}
             disabled={isLoading || !connected || trxAmount <= 0}
             className="w-full bg-primary hover:bg-primary/90"
-            size="lg"
           >
             {isLoading ? (
               <>
