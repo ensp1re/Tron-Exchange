@@ -40,7 +40,8 @@ const WalletProvider: React.FC<{
         const walletConnectAdapter = new WalletConnectAdapter({
             network: "Mainnet",
             options: {
-                relayUrl: 'wss://relay.walletconnect.com',
+        
+                relayUrl: 'wss://relay.walletconnect.org',
                 projectId: `${process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID}`, // create a new project on https://cloud.reown.com,
                 metadata: {
                     name: 'Tron Exchange',
