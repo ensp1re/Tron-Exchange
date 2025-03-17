@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
@@ -83,6 +84,15 @@ export default function TronExchangePage() {
 
       console.log("Fetching balances for address:", wallet?.adapter.name)
 
+      console.log(
+        "Wallet state:",
+
+        // @ts-ignore
+        wallet?.adapter?._wallet?._session?.peer.metadata.name,
+      )
+
+
+
       // If using TronLink, we can use the injected tronWeb instance
       if (wallet?.adapter.name === "TronLink" && window.tronWeb) {
         tronWebToUse = window.tronWeb
@@ -107,6 +117,7 @@ export default function TronExchangePage() {
   const { isIOS } = useMobile()
 
   console.log("isIOS", isIOS)
+
 
   const buyTrx = async () => {
     if (!connected || !address) {

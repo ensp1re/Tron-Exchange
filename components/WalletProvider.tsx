@@ -60,6 +60,7 @@ const WalletProvider: React.FC<{
                 themeMode: 'dark',
             },
 
+
         });
         const ledger = new LedgerAdapter({
             accountNumber: 2,

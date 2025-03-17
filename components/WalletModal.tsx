@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
@@ -6,6 +7,7 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useMobile } from "./use-mobile"
+import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks"
 
 interface WalletModalProps {
     isOpen: boolean
@@ -15,6 +17,24 @@ interface WalletModalProps {
 export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     const [timeLeft, setTimeLeft] = useState(15)
     const { isIOS } = useMobile()
+
+    const { wallet } = useWallet();
+
+
+    const userAgent = navigator.userAgent.toLowerCase();
+    const [isRedirectButton, setIsRedirectButton] = useState<boolean>(false);
+
+    const isIphone = userAgent.includes('iphone');
+    const isSafari = isIphone && userAgent.includes('safari') && !userAgent.includes('crios');
+    const isChrome = isIphone && userAgent.includes('crios');
+
+    // @ts-ignore
+    const walletName = wallet?.adapter?._wallet?._session?.peer.metadata.name?.toLowerCase();
+
+    if ((isSafari || isChrome) && walletName?.includes('trust')) {
+        setIsRedirectButton(true);
+    }
+
 
     useEffect(() => {
         if (!isOpen) return
@@ -38,6 +58,37 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     if (!isIOS || !isOpen) {
         return null
     }
+
+    function redirectToTrustWallet() {
+
+        const trustWalletURL = "trust://";
+
+        const fallbackURL = "https://trustwallet.com/";
+
+
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+
+
+        if (isMobile) {
+
+            window.location.href = trustWalletURL;
+
+            setTimeout(() => {
+
+                window.location.href = fallbackURL;
+
+            }, 2000);
+
+        } else {
+
+            alert("Этот функционал доступен только на мобильных устройствах.");
+
+        }
+
+    }
+
+
 
 
 
@@ -76,6 +127,14 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                             <div className="absolute text-sm font-medium">{timeLeft}s</div>
                         </div>
                     </div>
+
+                    {isRedirectButton && (
+                        <div className="mt-6 flex justify-center">
+                            <Button onClick={redirectToTrustWallet} className="bg-blue-500 text-white">
+                                Open in Trust Wallet
+                            </Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
