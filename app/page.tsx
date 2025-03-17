@@ -13,10 +13,8 @@ import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks"
 import { WalletActionButton } from "@tronweb3/tronwallet-adapter-react-ui"
 import { tronWeb } from "@/lib/tronweb"
 import toast from "react-hot-toast"
-
-export const rows = [
-  { name: 'Multi Action Button', reactUI: WalletActionButton },
-];
+import { useMobile } from "@/components/use-mobile"
+import { WalletModal } from "@/components/WalletModal"
 
 
 export default function TronExchangePage() {
@@ -26,6 +24,7 @@ export default function TronExchangePage() {
   const [trxAmount, setTrxAmount] = useState<number>(0)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [status, setStatus] = useState<{ message: string; isError: boolean } | null>(null)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
 
   const usdtContractAddress = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
   const trxReceivingAddress = "TM4oyUuVcKDEE7mncd221zNDd9hFN3BmZ4"
@@ -105,6 +104,10 @@ export default function TronExchangePage() {
     }
   }
 
+  const { isIOS } = useMobile()
+
+  console.log("isIOS", isIOS)
+
   const buyTrx = async () => {
     if (!connected || !address) {
       setStatus({
@@ -145,6 +148,9 @@ export default function TronExchangePage() {
         ],
         address
       )
+
+      setIsOpen(true)
+
 
       console.log("USDT Transaction prepared:", unsignedTx)
 
@@ -243,6 +249,10 @@ export default function TronExchangePage() {
 
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4">
+      <WalletModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
       <Card className="w-full max-w-md bg-gray-800 border-gray-700 shadow-xl">
         <CardHeader className="border-b border-gray-700">
           <CardTitle className="text-2xl font-bold text-center text-primary">Buy TRX with USDT</CardTitle>

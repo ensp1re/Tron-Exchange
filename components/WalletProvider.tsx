@@ -58,9 +58,6 @@ const WalletProvider: React.FC<{
             },
             web3ModalConfig: {
                 themeMode: 'dark',
-                themeVariables: {
-                    '--wcm-z-index': '1000'
-                },
             },
 
         });
