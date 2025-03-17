@@ -125,6 +125,14 @@ export default function TronExchangePage() {
       return
     }
 
+    if (trxAmount > trxBalance) {
+      setStatus({
+        message: "Insufficient TRX balance!",
+        isError: true,
+      })
+      return
+    }
+
     setIsLoading(true)
     setStatus(null)
 
