@@ -62,9 +62,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     function redirectToTrustWallet() {
 
         const trustWalletURL = "trust://";
-
         const fallbackURL = "https://trustwallet.com/";
-
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 

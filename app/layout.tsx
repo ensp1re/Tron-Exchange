@@ -11,7 +11,8 @@ import '@tronweb3/tronwallet-adapter-react-ui/style.css';
 const WalletProvider = dynamic(() => import("@/components/WalletProvider"), { ssr: false })
 
 
-const inter = Inter({ subsets: ["latin"] })
+
+const inter = Inter({ subsets: ["latin", "cyrillic"] })
 
 
 export default function RootLayout({
@@ -20,9 +21,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning suppressContentEditableWarning>
+    <html lang="ru" suppressHydrationWarning suppressContentEditableWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/x-icon" href="/logo.png" />
+        <meta name="yandex-verification" content="3f02f1ac70a43e58" />
+        <meta property="og:title" content="buytrx.org - get Tron to send USDT" />
+        <meta property="og:description" content="Buy TRX (Tron) with USDT even if you don't have any TRX right now" />
+        <meta property="og:image" content="https://buytrx.org/logo.png" />
+        <meta property="og:url" content="https://buytrx.org" />
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
@@ -37,58 +43,8 @@ export default function RootLayout({
                 },
               }}
             />
-            <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
-              <header className="container mx-auto py-4 px-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 32 32"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="text-primary"
-                    >
-                      <path d="M16 2L4 9V23L16 30L28 23V9L16 2Z" stroke="currentColor" strokeWidth="2" fill="none" />
-                      <path d="M16 16L4 9M16 16L28 9M16 16V30" stroke="currentColor" strokeWidth="2" />
-                    </svg>
-                    <span className="ml-2 text-xl font-bold text-white">TRON Exchange</span>
-                  </div>
-                  <nav>
-                    <ul className="flex space-x-4">
-                      <li>
-                        <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                          Home
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                          Exchange
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                          FAQ
-                        </a>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              </header>
-              <main>{children}</main>
-              <footer className="container mx-auto py-6 px-4 text-center text-gray-400 text-sm">
-                <p>© {new Date().getFullYear()} TRON Exchange. All rights reserved.</p>
-                <p className="mt-2">
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                  {" • "}
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </p>
-              </footer>
-            </div>
+
+            {children}
           </WalletProvider>
         </ThemeProvider>
       </body>

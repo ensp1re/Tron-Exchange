@@ -8,3 +8,9 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrency(value: number, decimals: number): string {
   return value.toFixed(decimals);
 }
+
+export function isUserAgentMobile(userAgent: string): boolean {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    userAgent
+  );
+}

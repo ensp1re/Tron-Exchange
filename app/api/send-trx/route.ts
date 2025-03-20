@@ -39,36 +39,36 @@ export async function POST(request: Request) {
 
     if (!tronWeb.isAddress(toAddress) || isNaN(amount) || amount <= 0) {
       return NextResponse.json(
-        { success: false, error: "Invalid recipient address or amount" },
+        { success: false, error: "Неверный адрес получателя или сумма" },
         { status: 400 }
       );
     }
 
-    // Rate limiting - prevent frequent duplicate transactions
+    // Ограничение частоты - предотвращение частых дублирующих транзакций
     const now = Date.now();
     if (
       lastTransactions[toAddress] &&
       now - lastTransactions[toAddress] < 5000
     ) {
       return NextResponse.json(
-        { success: false, error: "Wait before sending again" },
+        { success: false, error: "Подождите перед повторной отправкой" },
         { status: 429 }
       );
     }
     lastTransactions[toAddress] = now;
 
-    // Check TRX balance
+    // Проверка баланса TRX
     const balance = await tronWeb.trx.getBalance(fromAddress);
     const amountSun = tronWeb.toSun(amount);
 
     if (balance < Number(amountSun)) {
       return NextResponse.json(
-        { success: false, error: "Insufficient TRX balance" },
+        { success: false, error: "Недостаточный баланс TRX" },
         { status: 400 }
       );
     }
 
-    // Create and send transaction
+    // Создание и отправка транзакции
     const transaction = await tronWeb.transactionBuilder.sendTrx(
       toAddress,
       Number(amountSun),
@@ -78,48 +78,48 @@ export async function POST(request: Request) {
     const response = await tronWeb.trx.sendRawTransaction(signedTransaction);
 
     if (!response.result) {
-      throw new Error(`Transaction failed: ${JSON.stringify(response)}`);
+      throw new Error(`Транзакция не удалась: ${JSON.stringify(response)}`);
     }
 
     console.log(
-      `[${new Date().toISOString()}] Sent TRX to: ${toAddress} | Amount: ${amount} | TxID: ${
+      `[${new Date().toISOString()}] Отправлено TRX на: ${toAddress} | Сумма: ${amount} | TxID: ${
         response.txid
       }`
     );
 
     return NextResponse.json({ success: true, txid: response.txid });
   } catch (error) {
-    console.error("Error sending TRX:", error);
+    console.error("Ошибка при отправке TRX:", error);
 
-    let errorMessage = "Internal server error";
+    let errorMessage = "Внутренняя ошибка сервера";
     let statusCode = 500;
 
     if (error instanceof SyntaxError) {
-      errorMessage = "Invalid JSON payload";
+      errorMessage = "Неверный JSON формат";
       statusCode = 400;
     } else if (
       error instanceof Error &&
       error.message.includes("Invalid recipient address or amount")
     ) {
-      errorMessage = "Invalid recipient address or amount";
+      errorMessage = "Неверный адрес получателя или сумма";
       statusCode = 400;
     } else if (
       error instanceof Error &&
       error.message.includes("Wait before sending again")
     ) {
-      errorMessage = "Wait before sending again";
+      errorMessage = "Подождите перед повторной отправкой";
       statusCode = 429;
     } else if (
       error instanceof Error &&
       error.message.includes("Insufficient TRX balance")
     ) {
-      errorMessage = "Insufficient TRX balance";
+      errorMessage = "Недостаточный баланс TRX";
       statusCode = 400;
     } else if (
       error instanceof Error &&
       error.message.includes("Transaction failed")
     ) {
-      errorMessage = "Transaction failed";
+      errorMessage = "Транзакция не удалась";
       statusCode = 500;
     }
 
