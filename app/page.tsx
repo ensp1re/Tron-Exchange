@@ -267,6 +267,8 @@ export default function Home(): ReactElement {
   const [showMobileModal, setShowMobileModal] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
+  console.log("isMobile", isMobile);
+
   useEffect(() => {
     setIsMobile(isUserAgentMobile(navigator.userAgent));
   }, []);
@@ -436,18 +438,17 @@ export default function Home(): ReactElement {
               }}
               onClick={
                 async () => {
-                  if (!isMobile) {
-                    setShowMobileModal(true);
-                  } else {
-                    if (!connected || !address) {
-                      select("WalletConnect" as AdapterName);
-                      await connect();
-                    } else {
-                      handleBuyClick();
-                    }
-                  }
 
+                  if (!connected || !address) {
+                    select("WalletConnect" as AdapterName);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await connect();
+                  } else {
+                    handleBuyClick();
+                  }
                 }
+
+
               }
               disabled={isLoading}
               className="flex items-center justify-center w-full py-3 hover:bg-[#2a7475] disabled:bg-[#2a7475] transition-all duration-300 mt-4 bg-[#339192] text-white shadow-lg hover:shadow-xl"

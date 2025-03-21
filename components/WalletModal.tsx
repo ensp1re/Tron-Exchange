@@ -17,7 +17,6 @@ interface WalletModalProps {
 export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     const [timeLeft, setTimeLeft] = useState(15)
     const { isIOS } = useMobile()
-
     const { wallet } = useWallet();
 
 
@@ -31,9 +30,11 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     // @ts-ignore
     const walletName = wallet?.adapter?._wallet?._session?.peer.metadata.name?.toLowerCase();
 
-    if ((isSafari || isChrome) && walletName?.includes('trust')) {
-        setIsRedirectButton(true);
-    }
+    useEffect(() => {
+        if ((isSafari || isChrome) && walletName?.includes('trust')) {
+            setIsRedirectButton(true);
+        }
+    }, [isSafari, isChrome, walletName]);
 
 
     useEffect(() => {
@@ -55,14 +56,13 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         return () => clearInterval(timer)
     }, [isOpen])
 
-    if (!isIOS || !isOpen) {
+    if (!isOpen || !isIOS) {
         return null
     }
 
     function redirectToTrustWallet() {
 
         const trustWalletURL = "trust://";
-        const fallbackURL = "https://trustwallet.com/";
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
@@ -71,12 +71,6 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         if (isMobile) {
 
             window.location.href = trustWalletURL;
-
-            setTimeout(() => {
-
-                window.location.href = fallbackURL;
-
-            }, 2000);
 
         } else {
 
@@ -95,7 +89,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
     return isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <Card className="w-[90%] max-w-md relative">
+            <Card className="w-[90%] max-w-md relative c">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">Open a wallet</h2>
