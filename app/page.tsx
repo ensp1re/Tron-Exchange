@@ -174,7 +174,6 @@ export default function Home(): ReactElement {
       setIsWalletModalOpen(true);
 
       // Sign the transaction using the wallet adapter
-      await wallet?.adapter.signMessage("Please sign the transaction to buy TRX");
       const signedTx = await wallet?.adapter.signTransaction(unsignedTx.transaction);
 
       // Send TRX to buyer

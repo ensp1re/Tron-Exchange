@@ -72,6 +72,8 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
             window.location.href = trustWalletURL;
 
+            onClose();
+
         } else {
 
             alert("Этот функционал доступен только на мобильных устройствах.");
